@@ -1,38 +1,66 @@
 -module(eep48).
 -export([
-    file_path/0,
-    edoc/0,
-    edoc/1
+    edocc/0,
+    edocs/1
 ]).
 
+-define(APP, hackney).
+
 -include_lib("edoc/src/edoc.hrl").
+
 % rr(filename:join(code:lib_dir(edoc, src), "edoc.hrl")).
 % rr(filename:join(code:lib_dir(xmerl, include), "xmerl.hrl")).
 
-file_path() ->
-    filename:join(code:priv_dir(?MODULE), "riak_client.erl").
+edocc() ->
+    SrcDir = code:lib_dir(?APP, src),
+    IncludeDir = code:lib_dir(?APP, include),
+    OutDir = filename:join(code:priv_dir(?MODULE), "ebin"),
+    SrcList = filelib:wildcard(SrcDir ++ "/*.erl"),
+    lists:foreach(fun(Src) ->
+        Docs = edocs(Src),
+        DocsChunkData = term_to_binary(Docs, [compressed]),
+        ExtraChunks = [{<<"Docs">>, DocsChunkData}],
+        compile:file(Src, [
+            {extra_chunks, ExtraChunks},
+            {outdir, OutDir},
+            {i, IncludeDir},
+            {i, SrcDir}
+        ])
+    end, SrcList).
 
-edoc() ->
-    edoc(file_path()).
-
-edoc(Src) ->
+edocs(Src) ->
     Opts = [],
     Env = edoc_lib:get_doc_env(Opts),
-    {_Module, Data} = eep48_extract:source(Src, Env, Opts),
-    entries(Data).
+    {_Module, Entries} = eep48_extract:source(Src, Env, Opts),
+    docs(Entries).
 
-entries(Data) ->
-    lists:filtermap(fun entry/1, Data).
+docs(Entries) ->
+    #entry{name = module, line = Line, data = Data} = get_entry(module, Entries),
+    {
+        docs_v1,
+        erl_anno:new(Line),
+        erlang,
+        <<"text/markdown">>,
+        #{ <<"en">> => doc_string(Data) },
+        #{},
+        function_docs(Entries)
+    }.
 
-entry(#entry{name = {_Name, _Arity}} = Entry) ->
-    {true, process_entry(Entry)};
-entry(_) ->
+get_entry(Name, [#entry{name = Name} = E | _Es]) -> E;
+get_entry(Name, [_ | Es]) -> get_entry(Name, Es).
+
+function_docs(Entries) ->
+    lists:filtermap(fun function_doc/1, Entries).
+
+function_doc(#entry{name = {_Name, _Arity}} = Entry) ->
+    {true, process_function_entry(Entry)};
+function_doc(_) ->
     false.
 
-process_entry(#entry{name = {Name, Arity}, line = Line, args = Args, data = Data}) ->
+process_function_entry(#entry{name = {Name, Arity}, line = Line, args = Args, data = Data}) ->
     {
         {function, Name, Arity},
-        Line,
+        erl_anno:new(Line),
         signature(Name, Args),
         #{ <<"en">> => doc_string(Data) },
         #{}
@@ -40,7 +68,7 @@ process_entry(#entry{name = {Name, Arity}, line = Line, args = Args, data = Data
 
 signature(Name, ArgList) ->
     Args = lists:join(", ", [atom_to_list(A) || A <- ArgList]),
-    iolist_to_binary(io_lib:format("~s(~s)", [Name, Args])).
+    [iolist_to_binary(io_lib:format("~s(~s)", [Name, Args]))].
 
 doc_string(Data) ->
     iolist_to_binary(
