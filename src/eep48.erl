@@ -1,5 +1,6 @@
 -module(eep48).
 -export([
+    ex_doc/0,
     edocc/0,
     edocs/1
 ]).
@@ -10,6 +11,14 @@
 
 % rr(filename:join(code:lib_dir(edoc, src), "edoc.hrl")).
 % rr(filename:join(code:lib_dir(xmerl, include), "xmerl.hrl")).
+
+ex_doc() ->
+    'Elixir.ExDoc':generate_docs(<<"Welcome">>, <<"dev">>, [
+        {deps, []},
+        {source_beam, list_to_binary(source_beam())},
+        {filter_prefix, false},
+        {formatter,  <<"html">>}
+    ]).
 
 edocc() ->
     SrcDir = code:lib_dir(?TARGET, src),
