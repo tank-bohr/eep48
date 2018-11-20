@@ -4,19 +4,19 @@ defmodule Eep48.MixProject do
   def project do
     [
       app: :eep48,
-      version: "0.1.0",
+      version: "0.2.5",
       elixir: "~> 1.7",
       deps: deps(),
 
       # Docs
-      name: "Hackney",
-      source_url: "https://github.com/benoitc/hackney",
-      homepage_url: "https://github.com/benoitc/hackney",
-      source_root: "_build/default/lib/hackney",
+      name: "Bookish Spork",
+      source_url: "https://github.com/tank-bohr/bookish_spork",
+      homepage_url: "https://github.com/tank-bohr/bookish_spork",
+      source_root: "_build/default/lib/bookish_spork",
       docs: [
         # logo: "path/to/logo.png",
         main: "readme",
-        extras: ["_build/default/lib/hackney/README.md"],
+        extras: ["_build/default/lib/bookish_spork/README.md"],
         source_beam: ["priv/ebin"],
         filter_prefix: false
       ]

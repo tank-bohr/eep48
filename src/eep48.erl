@@ -4,7 +4,7 @@
     edocs/1
 ]).
 
--define(TARGET, hackney).
+-define(TARGET, bookish_spork).
 
 -include_lib("edoc/src/edoc.hrl").
 
