@@ -4,7 +4,7 @@
     edocs/1
 ]).
 
--define(APP, hackney).
+-define(TARGET, hackney).
 
 -include_lib("edoc/src/edoc.hrl").
 
@@ -12,17 +12,17 @@
 % rr(filename:join(code:lib_dir(xmerl, include), "xmerl.hrl")).
 
 edocc() ->
-    SrcDir = code:lib_dir(?APP, src),
-    IncludeDir = code:lib_dir(?APP, include),
-    OutDir = filename:join(code:priv_dir(?MODULE), "ebin"),
+    SrcDir = code:lib_dir(?TARGET, src),
+    IncludeDir = code:lib_dir(?TARGET, include),
     SrcList = filelib:wildcard(SrcDir ++ "/*.erl"),
     lists:foreach(fun(Src) ->
         Docs = edocs(Src),
         DocsChunkData = term_to_binary(Docs, [compressed]),
         ExtraChunks = [{<<"Docs">>, DocsChunkData}],
         compile:file(Src, [
+            debug_info,
             {extra_chunks, ExtraChunks},
-            {outdir, OutDir},
+            {outdir, source_beam()},
             {i, IncludeDir},
             {i, SrcDir}
         ])
@@ -78,3 +78,6 @@ tag_to_markdown(#tag{name = doc, data = Xml}) ->
     xmerl:export_simple(Xml, edown_xmerl);
 tag_to_markdown(_) ->
     "".
+
+source_beam() ->
+    filename:join(code:priv_dir(?MODULE), "ebin").

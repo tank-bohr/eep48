@@ -15,24 +15,18 @@ defmodule Eep48.MixProject do
       source_root: "_build/default/lib/hackney",
       docs: [
         # logo: "path/to/logo.png",
-        # main: "Hackney", # The main page in the docs
-        # extras: ["_build/default/lib/hackney/README.md"],
+        main: "readme",
+        extras: ["_build/default/lib/hackney/README.md"],
         source_beam: ["priv/ebin"],
         filter_prefix: false
       ]
     ]
   end
 
-  # def application do
-  #   [
-  #     extra_applications: [:logger]
-  #   ]
-  # end
-
   defp deps do
     [
       {:hackney, path: "priv", compile: false, runtime: false},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:ex_doc, github: "tank-bohr/ex_doc", only: :dev, runtime: false}
     ]
   end
 end
